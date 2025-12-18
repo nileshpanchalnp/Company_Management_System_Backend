@@ -1,12 +1,13 @@
-const express = require('express');
-const { login, register } = require('../controllers/user.js');
-const auth = require('../middleware/authMiddleware.js');
-const role = require('../middleware/role.middleware.js');
+import express from 'express';
+import { login, register } from '../controllers/user.js';
+import { protect, adminOrHR } from '../middleware/authMiddleware.js';
+
 const userRoutes = express.Router();
 
+// Login (public)
 userRoutes.post('/login', login);
 
-// Only admin can create users
-userRoutes.post('/register', auth, role('admin'), register);
+// Register (Admin / HR only)
+userRoutes.post('/register', protect, adminOrHR, register);
 
-module.exports = userRoutes;
+export default userRoutes;

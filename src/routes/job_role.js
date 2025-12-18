@@ -1,9 +1,13 @@
-const express = require('express');
-const {createJobRole,getJobRoles} = require('../controllers/job_role.js');
+import express from 'express';
+import { createJobRole, getJobRoles } from '../controllers/job_role.js';
+import { protect, adminOrHR } from '../middleware/authMiddleware.js';
 
 const job_role_router = express.Router();
 
-job_role_router.post('/create', createJobRole);
-job_role_router.get('/get', getJobRoles);
+// Create job role (Admin / HR only)
+job_role_router.post('/create', protect, adminOrHR, createJobRole);
 
-module.exports = job_role_router;
+// Get all job roles (any logged-in user)
+job_role_router.get('/get', protect, getJobRoles);
+
+export default job_role_router;

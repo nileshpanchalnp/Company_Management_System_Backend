@@ -1,7 +1,9 @@
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config/jwt.js');
+// src/middleware/authMiddleware.js
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/jwt.js';
+import Employee from '../models/employee.js';
 
-module.exports = (req, res, next) => {
+export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer'))
@@ -11,9 +13,26 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { id, role }
+
+    // 🔑 Find employee linked to user
+    const employee = await Employee.findOne({ user: decoded.id });
+
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+      employeeId: employee?._id || null,
+    };
+
     next();
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });
   }
+};
+
+/* ================= ROLE CHECK ================= */
+export const adminOrHR = (req, res, next) => {
+  if (!['admin', 'hr'].includes(req.user.role)) {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+  next();
 };

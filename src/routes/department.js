@@ -1,9 +1,13 @@
-const express = require('express');
-const {createDepartment,getDepartments} = require('../controllers/department.js');
+import express from 'express';
+import { createDepartment, getDepartments } from '../controllers/department.js';
+
 
 const department_router = express.Router();
 
+// Create department (Admin / HR only)
 department_router.post('/create', createDepartment);
+
+// Get all departments (any logged-in user)
 department_router.get('/get', getDepartments);
 
-module.exports = department_router;
+export default department_router;

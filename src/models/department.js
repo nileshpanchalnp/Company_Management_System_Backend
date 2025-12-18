@@ -1,16 +1,24 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const departmentSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true
+const departmentSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+    },
+    is_active: {
+      type: Boolean,
+      default: true,
+    },
   },
-  description: String,
-  is_active: {
-    type: Boolean,
-    default: true
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Department', departmentSchema);
+const Department = mongoose.model('Department', departmentSchema);
+
+export default Department;

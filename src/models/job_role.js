@@ -1,20 +1,29 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const jobRoleSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true
+const jobRoleSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department',
+      required: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    is_active: {
+      type: Boolean,
+      default: true,
+    },
   },
-  department: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Department',
-    required: true
-  },
-  description: String,
-  is_active: {
-    type: Boolean,
-    default: true
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('JobRole', jobRoleSchema);
+const JobRole = mongoose.model('JobRole', jobRoleSchema);
+
+export default JobRole;
