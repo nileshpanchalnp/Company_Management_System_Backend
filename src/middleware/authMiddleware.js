@@ -15,11 +15,14 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     // 🔑 Find employee linked to user
-    const employee = await Employee.findOne({ user: decoded.id });
+    const userId = decoded.id || decoded._id;
+    const employee = await Employee.findOne({ user: userId });
 
     req.user = {
-      id: decoded.id,
+      id: userId,
+      _id: userId,
       role: decoded.role,
+      employeeId: user.employeeId,
       employeeId: employee?._id || null,
     };
 

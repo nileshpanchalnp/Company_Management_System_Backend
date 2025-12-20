@@ -77,16 +77,22 @@ export const getAllLeaves = async (req, res) => {
 // Approve Leave
 export const approveLeave = async (req, res) => {
   try {
+    // Safety Check
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "User not authenticated correctly" });
+    }
+
     const leave = await Leave.findByIdAndUpdate(
       req.params.id,
       {
         status: 'approved',
-        approved_by: req.user.id,
+        approved_by: req.user.id, 
         approved_at: new Date(),
       },
       { new: true }
     );
 
+    if (!leave) return res.status(404).json({ message: "Leave not found" });
     res.json({ message: 'Leave approved', leave });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -20,7 +20,7 @@ employee_router.get('/get', getEmployees);
 employee_router.get('/me',protect,getMe)
 
 // Get single employee by ID (Admin / HR only)
-employee_router.get('/getone/:id', getEmployeeById);
+employee_router.get('/getone/:_id', getEmployeeById);
 
 // Update employee by ID (Admin / HR only)
 employee_router.put('/update/:id', protect, adminOrHR, updateEmployee);

@@ -12,11 +12,10 @@ export const login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password required' });
     }
 
-    // Check if any users exist (first login)
     const userCount = await User.countDocuments();
 
+    // FIRST LOGIN → DEFAULT ADMIN
     if (userCount === 0) {
-      // first default admin login
       if (email !== 'admin@company.com' || password !== 'password') {
         return res.status(403).json({ success: false, message: 'Only default admin can login first' });
       }
@@ -28,18 +27,27 @@ export const login = async (req, res) => {
         is_active: true,
       });
 
-      const token = jwt.sign({ id: admin._id, role: admin.role }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
+      const token = jwt.sign(
+        { id: admin._id, role: admin.role },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRE }
+      );
 
       return res.json({
         success: true,
         token,
-        user: { id: admin._id, email: admin.email, role: admin.role, is_active: admin.is_active },
+        user: {
+          id: admin._id,
+          email: admin.email,
+          role: admin.role,
+          is_active: admin.is_active,
+        },
       });
     }
 
-    // Normal login
+    // NORMAL LOGIN
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || password !== user.password) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
@@ -47,23 +55,17 @@ export const login = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Account disabled' });
     }
 
-    // NOTE: plain text password check (replace with bcrypt later)
-    if (password !== user.password) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    // Optional: link employee
     const employee = await Employee.findOne({ user: user._id });
 
-const token = jwt.sign(
-  {
-    id: admin._id,
-    role: admin.role,
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
         employeeId: employee?._id || null,
-  },
-  JWT_SECRET,
-  { expiresIn: JWT_EXPIRE }
-);
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRE }
+    );
 
     return res.json({
       success: true,
@@ -77,9 +79,10 @@ const token = jwt.sign(
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
 
 /* ================= REGISTER (Admin/HR Only) ================= */
 export const register = async (req, res) => {
@@ -107,3 +110,34 @@ export const register = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 };
+
+// export const register = async (req, res) => {
+//   try {
+//     const { email, password, role, employeeData } = req.body;
+
+//     const user = await User.create({
+//       email,
+//       password,
+//       role,
+//       is_active: true,
+//     });
+
+//     // 👇 If employee user → create profile
+//     if (role === 'employee') {
+//       await Employee.create({
+//         user: user._id, // ✅ LINK
+//         email,
+//         employee_code: employeeData.employee_code,
+//         full_name: employeeData.full_name,
+//         department: employeeData.department,
+//         job_role: employeeData.job_role,
+//         joining_date: employeeData.joining_date,
+//         basic_salary: employeeData.basic_salary,
+//       });
+//     }
+
+//     res.status(201).json({ success: true, message: 'User created' });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };

@@ -18,7 +18,7 @@ Leave_router.get('/types', protect, getActiveLeaveTypes);
 
 /* ADMIN / HR */
 Leave_router.get('/getall', getAllLeaves);
-Leave_router.put('/:id/approve', approveLeave);
-Leave_router.put('/:id/reject', rejectLeave);
+Leave_router.put('/approve/:id', protect, approveLeave);
+Leave_router.put('/reject/:id', protect, rejectLeave);
 
 export default Leave_router;

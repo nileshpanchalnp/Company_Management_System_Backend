@@ -5,26 +5,30 @@ import sendEmail from '../utils/sendEmail.js';
 /* ================= CREATE EMPLOYEE ================= */
 export const createEmployee = async (req, res) => {
   try {
-    const { email, full_name } = req.body;
+    const {
+      email,
+      full_name,
+      employee_code,
+      department,
+      job_role,
+      joining_date,
+      basic_salary,
+      ...rest
+    } = req.body;
 
-    // 1️⃣ Create Employee
-    const employee = await Employee.create(req.body);
+    // 1️⃣ Check if user already exists
+    let user = await User.findOne({ email });
 
-    // 2️⃣ Check if User already exists
-    const existingUser = await User.findOne({ email });
-
-    if (!existingUser) {
-      const defaultPassword = '123456';
-
-      // 3️⃣ Create User account
-      await User.create({
+    if (!user) {
+      // 2️⃣ Create User FIRST
+      user = await User.create({
         email,
-        password: defaultPassword, // plain (as per your system)
+        password: '123456',
         role: 'employee',
         is_active: true,
       });
 
-      // 4️⃣ Send Email
+      // 3️⃣ Send credentials email
       await sendEmail({
         to: email,
         subject: 'Your Employee Login Credentials',
@@ -33,24 +37,36 @@ Hello ${full_name},
 
 Your employee account has been created.
 
-Login Details:
 Email: ${email}
 Password: 123456
 
-Please login and change your password after first login.
+Please change your password after first login.
 
-Thank you,
-HR Team
+- HR Team
         `,
       });
     }
 
+    // 4️⃣ Create Employee WITH user link (THIS WAS MISSING)
+    const employee = await Employee.create({
+      user: user._id, // ✅ REQUIRED
+      email,
+      employee_code,
+      full_name,
+      department,
+      job_role,
+      joining_date,
+      basic_salary,
+      ...rest,
+    });
+
     res.status(201).json({
       success: true,
-      message: 'Employee & user account created successfully',
+      message: 'Employee created successfully',
       data: employee,
     });
   } catch (error) {
+    console.error(error);
     res.status(400).json({
       success: false,
       message: error.message,
@@ -105,7 +121,7 @@ export const getEmployeeById = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
- try {
+  try {
     if (!req.user.employeeId) {
       return res.status(404).json({
         success: false,

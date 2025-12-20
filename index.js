@@ -9,6 +9,7 @@ import department_router from './src/routes/department.js';
 import job_role_router from './src/routes/job_role.js';
 import Leave_router from './src/routes/Leave.js';
 import leave_type from './src/routes/LeaveType.js';
+import Attendance_router from './src/routes/Attendance.js';
 import { protect } from './src/middleware/authMiddleware.js';
 
 
@@ -37,6 +38,7 @@ app.use('/department',department_router)
 app.use('/job_role',job_role_router)
 app.use('/leave',Leave_router);
 app.use('/leave-type',leave_type);
+app.use('/attendance',Attendance_router);
 
 // Test protected route
 app.get('/api/protected', protect, (req, res) => {
